@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Contact | Digital Twin AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+background:#f6f8ff;
+
+color:#222;
+
+}
+
+/* Hero */
+
+.hero{
+
+background:linear-gradient(135deg,#5B5FEF,#7D5FFF);
+
+border-bottom-left-radius:45px;
+
+border-bottom-right-radius:45px;
+
+padding:80px 8%;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+flex-wrap:wrap;
+
+overflow:hidden;
+
+}
+
+.heroText{
+
+width:50%;
+
+color:white;
+
+}
+
+.heroText h1{
+
+font-size:58px;
+
+font-weight:700;
+
+margin-bottom:20px;
+
+line-height:1.1;
+
+}
+
+.heroText p{
+
+font-size:18px;
+
+line-height:1.8;
+
+opacity:.95;
+
+margin-bottom:35px;
+
+max-width:580px;
+
+}
+
+.heroButtons{
+
+display:flex;
+
+gap:18px;
+
+}
+
+.btn{
+
+padding:15px 38px;
+
+border-radius:50px;
+
+text-decoration:none;
+
+font-weight:600;
+
+transition:.35s;
+
+}
+
+.btnPrimary{
+
+background:white;
+
+color:#5B5FEF;
+
+}
+
+.btnPrimary:hover{
+
+transform:translateY(-4px);
+
+box-shadow:0 15px 30px rgba(0,0,0,.18);
+
+}
+
+.btnOutline{
+
+border:2px solid white;
+
+color:white;
+
+}
+
+.btnOutline:hover{
+
+background:white;
+
+color:#5B5FEF;
+
+}
+
+.heroImage{
+
+width:40%;
+
+display:flex;
+
+justify-content:center;
+
+}
+
+.heroImage img{
+
+width:100%;
+
+max-width:420px;
+
+animation:float 4s ease-in-out infinite;
+
+}
+
+@keyframes float{
+
+0%,100%{
+
+transform:translateY(0);
+
+}
+
+50%{
+
+transform:translateY(-18px);
+
+}
+
+}
+
+/* Main */
+
+.wrapper{
+
+max-width:1200px;
+
+margin:70px auto;
+
+padding:0 20px;
+
+}
+
+.contactBox{
+
+display:grid;
+
+grid-template-columns:2fr 1fr;
+
+background:white;
+
+border-radius:28px;
+
+overflow:hidden;
+
+box-shadow:0 18px 50px rgba(0,0,0,.08);
+
+}
+
+.left{
+
+padding:45px;
+
+}
+
+.left h2{
+
+font-size:36px;
+
+margin-bottom:10px;
+
+}
+
+.left p{
+
+color:#666;
+
+margin-bottom:35px;
+
+line-height:1.8;
+
+}
+
+.formGroup{
+
+margin-bottom:22px;
+
+}
+
+.formGroup label{
+
+display:block;
+
+margin-bottom:8px;
+
+font-weight:500;
+
+}
+
+.formGroup input,
+
+.formGroup textarea{
+
+width:100%;
+
+padding:16px;
+
+border-radius:14px;
+
+border:1px solid #ddd;
+
+font-size:15px;
+
+transition:.3s;
+
+outline:none;
+
+}
+
+.formGroup textarea{
+
+height:150px;
+
+resize:none;
+
+}
+
+.formGroup input:focus,
+
+.formGroup textarea:focus{
+
+border-color:#5B5FEF;
+
+box-shadow:0 0 0 4px rgba(91,95,239,.15);
+
+}
+
+.sendBtn{
+
+width:100%;
+
+padding:18px;
+
+border:none;
+
+border-radius:50px;
+
+background:linear-gradient(90deg,#5B5FEF,#7D5FFF);
+
+color:white;
+
+font-size:17px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.35s;
+
+}
+
+.sendBtn:hover{
+
+transform:translateY(-4px);
+
+box-shadow:0 18px 35px rgba(91,95,239,.35);
+
+}
+/* ================= RIGHT PANEL ================= */
+
+.right{
+
+background:linear-gradient(180deg,#5B5FEF,#7D5FFF);
+
+padding:45px 35px;
+
+color:white;
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+}
+
+.right h2{
+
+font-size:30px;
+
+margin-bottom:35px;
+
+}
+
+.info{
+
+display:flex;
+
+align-items:flex-start;
+
+margin-bottom:28px;
+
+}
+
+.icon{
+
+width:50px;
+
+height:50px;
+
+border-radius:50%;
+
+background:rgba(255,255,255,.15);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:18px;
+
+margin-right:18px;
+
+flex-shrink:0;
+
+}
+
+.info h4{
+
+font-size:16px;
+
+margin-bottom:6px;
+
+}
+
+.info p{
+
+font-size:14px;
+
+opacity:.9;
+
+line-height:1.7;
+
+}
+
+.divider{
+
+width:100%;
+
+height:1px;
+
+background:rgba(255,255,255,.25);
+
+margin:25px 0;
+
+}
+
+.supportBox{
+
+background:rgba(255,255,255,.12);
+
+padding:18px;
+
+border-radius:18px;
+
+margin-bottom:25px;
+
+}
+
+.supportBox h3{
+
+margin-bottom:12px;
+
+font-size:18px;
+
+}
+
+.supportBox ul{
+
+padding-left:18px;
+
+line-height:2;
+
+font-size:14px;
+
+}
+
+.social{
+
+display:flex;
+
+gap:14px;
+
+margin-top:18px;
+
+}
+
+.social a{
+
+width:42px;
+
+height:42px;
+
+border-radius:50%;
+
+background:rgba(255,255,255,.15);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+color:white;
+
+text-decoration:none;
+
+transition:.35s;
+
+}
+
+.social a:hover{
+
+background:white;
+
+color:#5B5FEF;
+
+transform:translateY(-4px);
+
+}
+
+/* ================= FEATURES ================= */
+
+.features{
+
+max-width:1200px;
+
+margin:70px auto;
+
+padding:0 20px;
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:22px;
+
+}
+
+.feature{
+
+background:white;
+
+padding:30px;
+
+border-radius:22px;
+
+text-align:center;
+
+box-shadow:0 15px 35px rgba(0,0,0,.06);
+
+transition:.35s;
+
+}
+
+.feature:hover{
+
+transform:translateY(-10px);
+
+}
+
+.feature i{
+
+font-size:38px;
+
+margin-bottom:20px;
+
+color:#5B5FEF;
+
+}
+
+.feature h3{
+
+margin-bottom:12px;
+
+}
+
+.feature p{
+
+font-size:14px;
+
+color:#666;
+
+line-height:1.8;
+
+}
+
+/* ================= MAP ================= */
+
+.mapSection{
+
+max-width:1200px;
+
+margin:70px auto;
+
+padding:0 20px;
+
+}
+
+.mapSection iframe{
+
+width:100%;
+
+height:380px;
+
+border:none;
+
+border-radius:25px;
+
+box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+
+margin-top:70px;
+
+padding:30px;
+
+text-align:center;
+
+color:#777;
+
+font-size:15px;
+
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1000px){
+
+.hero{
+
+text-align:center;
+
+}
+
+.heroText,
+
+.heroImage{
+
+width:100%;
+
+}
+
+.heroButtons{
+
+justify-content:center;
+
+}
+
+.heroText h1{
+
+font-size:46px;
+
+}
+
+.contactBox{
+
+grid-template-columns:1fr;
+
+}
+
+.features{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:700px){
+
+.features{
+
+grid-template-columns:1fr;
+
+}
+
+.heroText h1{
+
+font-size:38px;
+
+}
+
+.hero{
+
+padding:60px 25px;
+
+}
+
+.left{
+
+padding:30px;
+
+}
+
+.right{
+
+padding:30px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- HERO -->
+
+<section class="hero">
+
+<div class="heroText">
+
+<h1>Let's Build the Future Together</h1>
+
+<p>
+
+Have questions about our Digital Twin AI platform?
+Our team is here to help you with AI solutions,
+predictive analytics, IoT integration and technical support.
+
+</p>
+
+<div class="heroButtons">
+
+<a href="#" class="btn btnPrimary">
+
+🚀 Contact Support
+
+</a>
+
+<a href="#" class="btn btnOutline">
+
+Learn More
+
+</a>
+
+</div>
+
+</div>
+
+<div class="heroImage">
+
+<img src="https://undraw.co/api/illustrations/fe2dfb5e-0f4d-46fd-8e54-fb3b6d7ef6d1">
+
+</div>
+
+</section>
+<!-- CONTACT SECTION -->
+
+<div class="wrapper">
+
+<div class="contactBox">
+
+<div class="left">
+
+<h2>Get in Touch</h2>
+
+<p>
+
+Whether you have a question about our AI-powered Digital Twin platform,
+predictive analytics, IoT integration, or technical support, we'd love to
+hear from you.
+
+</p>
+
+<form>
+
+<div class="formGroup">
+
+<label>Full Name</label>
+
+<input
+type="text"
+placeholder="Enter your full name"
+required>
+
+</div>
+
+<div class="formGroup">
+
+<label>Email Address</label>
+
+<input
+type="email"
+placeholder="example@gmail.com"
+required>
+
+</div>
+
+<div class="formGroup">
+
+<label>Subject</label>
+
+<input
+type="text"
+placeholder="Subject">
+
+</div>
+
+<div class="formGroup">
+
+<label>Your Message</label>
+
+<textarea
+placeholder="Write your message here..."></textarea>
+
+</div>
+
+<button class="sendBtn">
+
+Send Message
+
+</button>
+
+</form>
+
+</div>
+
+<div class="right">
+
+<h2>Contact Information</h2>
+
+<div class="info">
+
+<div class="icon">
+
+<i class="fas fa-envelope"></i>
+
+</div>
+
+<div>
+
+<h4>Email</h4>
+
+<p>support@digitaltwinai.com</p>
+
+</div>
+
+</div>
+
+<div class="info">
+
+<div class="icon">
+
+<i class="fas fa-phone"></i>
+
+</div>
+
+<div>
+
+<h4>Phone</h4>
+
+<p>+91 98765 43210</p>
+
+</div>
+
+</div>
+
+<div class="info">
+
+<div class="icon">
+
+<i class="fas fa-location-dot"></i>
+
+</div>
+
+<div>
+
+<h4>Location</h4>
+
+<p>Visakhapatnam, Andhra Pradesh</p>
+
+</div>
+
+</div>
+
+<div class="info">
+
+<div class="icon">
+
+<i class="fas fa-clock"></i>
+
+</div>
+
+<div>
+
+<h4>Working Hours</h4>
+
+<p>Monday - Saturday<br>9:00 AM - 6:00 PM</p>
+
+</div>
+
+</div>
+
+<div class="divider"></div>
+
+<div class="supportBox">
+
+<h3>Digital Twin Support</h3>
+
+<ul>
+
+<li>AI Prediction Assistance</li>
+
+<li>IoT Device Integration</li>
+
+<li>Cloud Synchronization</li>
+
+<li>Predictive Maintenance</li>
+
+</ul>
+
+</div>
+
+<div class="social">
+
+<a href="#"><i class="fab fa-linkedin"></i></a>
+
+<a href="#"><i class="fab fa-github"></i></a>
+
+<a href="#"><i class="fab fa-instagram"></i></a>
+
+<a href="#"><i class="fab fa-x-twitter"></i></a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- FEATURES -->
+
+<section class="features">
+
+<div class="feature">
+
+<i class="fas fa-brain"></i>
+
+<h3>AI Analytics</h3>
+
+<p>
+
+Generate intelligent insights from real-time operational data.
+
+</p>
+
+</div>
+
+<div class="feature">
+
+<i class="fas fa-microchip"></i>
+
+<h3>IoT Monitoring</h3>
+
+<p>
+
+Monitor connected devices and sensors with live updates.
+
+</p>
+
+</div>
+
+<div class="feature">
+
+<i class="fas fa-cloud"></i>
+
+<h3>Cloud Platform</h3>
+
+<p>
+
+Secure cloud synchronization for Digital Twin environments.
+
+</p>
+
+</div>
+
+<div class="feature">
+
+<i class="fas fa-chart-line"></i>
+
+<h3>Predictive Maintenance</h3>
+
+<p>
+
+Reduce downtime using AI-powered predictions.
+
+</p>
+
+</div>
+
+</section>
+
+<!-- MAP -->
+
+<section class="mapSection">
+
+<iframe
+src="https://maps.google.com/maps?q=Visakhapatnam&t=&z=12&ie=UTF8&iwloc=&output=embed">
+</iframe>
+
+</section>
+
+<footer class="footer">
+
+© 2026 Digital Twin AI Platform • Powered by AI, IoT & Cloud Computing
+
+</footer>
+
+<script>
+
+const form=document.querySelector("form");
+
+form.addEventListener("submit",function(e){
+
+e.preventDefault();
+
+alert("Thank you! Your message has been sent successfully.");
+
+form.reset();
+
+});
+
+</script>
+
+</body>
+
+</html>
+
