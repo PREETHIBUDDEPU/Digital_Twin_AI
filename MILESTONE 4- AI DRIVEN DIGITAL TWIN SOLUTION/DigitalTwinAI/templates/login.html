@@ -2,7 +2,7 @@
 
 {% block extra_css %}
 <style>
-    /* Override the default container padding for full width layout */
+    /* Override the default container padding for full‑width layout */
     .login-wrapper {
         min-height: 80vh;
         display: flex;
@@ -63,12 +63,13 @@
     }
     .form-floating {
         margin-bottom: 1rem;
+        position: relative;
     }
     .form-floating > .form-control {
         border-radius: 12px;
         border: 1.5px solid #e2e8f0;
         transition: border-color 0.2s;
-        padding: 1rem 0.75rem;
+        padding: 1rem 3rem 1rem 0.75rem; /* extra right padding for toggle */
         height: calc(3.5rem + 2px);
     }
     .form-floating > .form-control:focus {
@@ -79,15 +80,27 @@
         padding: 1rem 0.75rem;
         color: #a0aec0;
     }
-    .input-icon {
+    /* --- Toggle Password (eye emoji) --- */
+    .toggle-password {
         position: absolute;
-        right: 1rem;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #a0aec0;
-        pointer-events: none;
+        cursor: pointer;
         z-index: 10;
+        background: transparent;
+        border: none;
+        font-size: 1.4rem;
+        line-height: 1;
+        padding: 4px 6px;
+        user-select: none;
+        color: #555;
+        transition: color 0.2s;
     }
+    .toggle-password:hover {
+        color: #667eea;
+    }
+    /* --- End toggle --- */
     .form-check-input:checked {
         background-color: #667eea;
         border-color: #667eea;
@@ -168,16 +181,18 @@
                 <p class="subtitle">Access your personal dashboard and simulations.</p>
 
                 <form method="POST">
-                    <!-- Username field with icon -->
+                    <!-- Username field -->
                     <div class="form-floating position-relative">
                         <input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
                         <label for="username"><i class="fas fa-user me-2"></i>Username</label>
                     </div>
 
-                    <!-- Password field with icon -->
+                    <!-- Password field WITH EYE TOGGLE -->
                     <div class="form-floating position-relative">
                         <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
                         <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+                        <!-- Eye toggle (clickable) -->
+                        <span class="toggle-password" onclick="togglePasswordVisibility(this)">👁️</span>
                     </div>
 
                     <!-- Remember me & forgot password -->
@@ -218,5 +233,18 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    // ---- Toggle Password Visibility (same as on register page) ----
+    function togglePasswordVisibility(element) {
+        const input = element.closest('.form-floating').querySelector('input');
+        if (input.type === 'password') {
+            input.type = 'text';
+            element.textContent = '🙈';   // hide icon
+        } else {
+            input.type = 'password';
+            element.textContent = '👁️';   // show icon
+        }
+    }
+</script>
+{% endblock %}
