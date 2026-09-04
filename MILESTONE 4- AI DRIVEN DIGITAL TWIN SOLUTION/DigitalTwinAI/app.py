@@ -7,8 +7,16 @@ from datetime import datetime, timedelta
 import numpy as np
 from sklearn.linear_model import LinearRegression
 import os
+import sys
 from dotenv import load_dotenv
 from collections import defaultdict
+
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 
 load_dotenv()
 
@@ -210,12 +218,12 @@ def create_default_admin():
         admin.is_admin = True
         db.session.add(admin)
         db.session.commit()
-        print("✅ Default admin user created:")
+        print("[OK] Default admin user created:")
         print("   Username: admin")
         print("   Password: admin123")
         print("   Please change your password after first login.")
     else:
-        print("✅ Admin user already exists.")
+        print("[OK] Admin user already exists.")
 
 # ------------------------- Routes -------------------------
 @login_manager.user_loader
@@ -851,6 +859,231 @@ def clear_simulation_history():
     flash('Simulation history cleared.')
     return redirect(url_for('user_simulation'))
 
+def is_project_relevant_query(query):
+    """Check if the user's question is relevant to the Digital Twin project and personal life tracking."""
+    q = query.lower().strip()
+    keywords = [
+        # Finance & Wealth
+        'save', 'saving', 'savings', 'money', 'finance', 'financial', 'spend', 'spending', 'spent',
+        'expense', 'expenses', 'income', 'budget', 'budgeting', 'invest', 'investing', 'investment',
+        'investments', 'rupee', 'rupees', '₹', 'debt', 'cash', 'transaction', 'transactions', 'salary',
+        'cost', 'costs', 'net worth', 'balance', 'wealth',
+        # Academics & Studies
+        'study', 'studies', 'studying', 'gpa', 'exam', 'exams', 'grade', 'grades', 'learn', 'learning',
+        'subject', 'subjects', 'course', 'courses', 'college', 'school', 'university', 'academic',
+        'academics', 'test', 'tests', 'score', 'scores', 'reading', 'homework', 'syllabus', 'assignment',
+        # Fitness & Physical Health
+        'fit', 'fitness', 'exercise', 'exercising', 'workout', 'workouts', 'gym', 'health', 'healthy',
+        'run', 'running', 'cardio', 'weight', 'muscle', 'calories', 'training', 'walk', 'walking',
+        'jog', 'jogging', 'diet', 'nutrition', 'water', 'hydration', 'physical', 'strength',
+        # Simulation & Forecasting
+        'simulate', 'simulation', 'simulations', 'scenario', 'scenarios', 'forecast', 'forecasts',
+        'predict', 'prediction', 'predictions', 'future', 'projection', 'projections', 'impact', 'what-if',
+        'what if',
+        # Goals & Productivity
+        'goal', 'goals', 'habit', 'habits', 'productivity', 'productive', 'routine', 'routines',
+        'task', 'tasks', 'plan', 'planning', 'time', 'schedule', 'priority', 'priorities', 'focus',
+        'pomodoro', 'target', 'targets', 'organize', 'discipline',
+        # Sleep & Recovery
+        'sleep', 'sleeping', 'rest', 'resting', 'tired', 'energy', 'burnout', 'stress', 'recovery',
+        'bedtime', 'wake', 'circadian', 'wellness',
+        # Digital Twin app features & navigation
+        'digital twin', 'twin', 'app', 'application', 'dashboard', 'profile', 'feature', 'features',
+        'setting', 'settings', 'user', 'account', 'how do i', 'how to use',
+        # Conversation & Greetings
+        'hi', 'hello', 'hey', 'greetings', 'who are you', 'what are you', 'how are you', 'help',
+        'start', 'intro', 'what can you do', 'thank', 'thanks', 'bye', 'goodbye',
+        'good morning', 'good afternoon', 'good evening',
+        # Self-development & life context
+        'life', 'balance', 'daily', 'routine', 'career', 'improve', 'better', 'decision', 'decisions',
+        'advice', 'recommend', 'recommendation', 'recommendations', 'progress', 'today', 'week', 'month'
+    ]
+    return any(k in q for k in keywords)
+
+def get_out_of_scope_response(user, query):
+    """Polite refusal for questions outside the Digital Twin application scope."""
+    return (
+        f"### ⚠️ Out of Project Scope\n\n"
+        f"I am designed specifically as your **Digital Twin AI Assistant** to help you optimize your personal decisions and lifestyle.\n\n"
+        f"I can only answer questions regarding this project and your personal tracking:\n"
+        f"- 💰 **Personal Finances:** Budgeting, income, expenses, savings rate, and investment forecasts.\n"
+        f"- 📚 **Studies & Academics:** Study logs, GPA predictions, focus strategies, and exam prep.\n"
+        f"- 🏃 **Fitness & Health:** Workout logs, target exercise hours, calories burned, and physical wellness.\n"
+        f"- 🔮 **Life Simulations:** Testing what-if financial and lifestyle scenarios before deciding.\n"
+        f"- 🎯 **Goals & Habits:** Tracking, managing, and achieving your registered personal targets.\n\n"
+        f"Please ask a question related to your **Digital Twin profile, finances, studies, fitness, simulation, or goals**!"
+    )
+
+def generate_rule_based_response(user, query):
+    """Generate high-quality, structured, personalized digital twin advice when AI is offline or times out."""
+    q = query.lower().strip()
+
+    # Reject questions outside the project scope
+    if not is_project_relevant_query(query):
+        return get_out_of_scope_response(user, query)
+
+    # Calculate real user metrics
+    fin = calculate_financial_metrics(user)
+    gpa_data = predict_gpa(user)
+    total_study_hours = sum(log.hours for log in user.study_logs) if user.study_logs else 0
+    total_fitness_min = sum(log.duration_min for log in user.fitness_logs) if user.fitness_logs else 0
+    total_goals = len(user.goals)
+    achieved_goals = sum(1 for g in user.goals if g.achieved)
+
+    # 1. Pleasantries / Thanks / Goodbye
+    if any(k in q for k in ['thank', 'thanks', 'bye', 'goodbye']):
+        return (
+            f"### 😊 You're Very Welcome, {user.username}!\n\n"
+            f"I'm always here to help you optimize your finances, studies, fitness, and goals. "
+            f"Keep making progress on your Digital Twin journey!"
+        )
+
+    # 2. How are you
+    if 'how are you' in q:
+        return (
+            f"### 🤖 All Systems Optimal!\n\n"
+            f"I'm running smoothly and monitoring your Digital Twin metrics across:\n"
+            f"- 💰 **Finances:** ₹{user.savings:,.0f} saved (Savings Rate: {fin.get('rate', 0):.1f}%)\n"
+            f"- 📚 **Studies:** {gpa_data.get('gpa', 3.0)}/4.0 predicted GPA ({total_study_hours:.1f}h logged)\n"
+            f"- 🏃 **Fitness:** {total_fitness_min} mins logged ({user.fitness_hours_per_week}h/week target)\n\n"
+            f"What aspect of your Digital Twin would you like to review or improve today?"
+        )
+
+    # 3. Fitness / Exercise / Health
+    if any(k in q for k in ['fit', 'exercise', 'workout', 'gym', 'health', 'run', 'cardio', 'weight', 'muscle', 'calories', 'training', 'walk', 'diet', 'nutrition']):
+        activities = set(f.activity for f in user.fitness_logs if f.activity)
+        activity_str = ", ".join(activities) if activities else "General workouts"
+        target_hours = user.fitness_hours_per_week or 5.0
+        weekly_min_target = int(target_hours * 60)
+
+        return (
+            f"### 🏋️‍♂️ Personalized Fitness Recommendations for {user.username}\n\n"
+            f"**Your Current Activity Overview:**\n"
+            f"- **Total Logged Fitness:** {total_fitness_min} minutes ({total_fitness_min // 60}h {total_fitness_min % 60}m)\n"
+            f"- **Weekly Target:** {target_hours} hours/week (~{weekly_min_target} mins/week)\n"
+            f"- **Recorded Activities:** {activity_str}\n\n"
+            f"**Actionable Steps to Improve:**\n"
+            f"1. **Structured Split:** Aim for 3 days of resistance training (push/pull/legs or full-body) and 2 days of moderate cardio (20–30 mins).\n"
+            f"2. **Progressive Overload:** Gradually increase workout duration, reps, or weights by 5–10% each week to continuously stimulate progress.\n"
+            f"3. **Recovery & Nutrition:** Fuel workouts with 1.6–2.0g protein per kg of body weight, drink 2.5–3L of water daily, and protect your **{user.sleep_hours_per_day} hours** of sleep for muscle repair.\n"
+            f"4. **Consistency:** Log each session in the **Fitness** tab immediately after exercising to maintain your momentum and track calories burned!"
+        )
+
+    # 4. Finance / Money / Savings / Spend / Budget / Investment
+    if any(k in q for k in ['save', 'saving', 'money', 'finance', 'spend', 'expense', 'income', 'budget', 'invest', 'rupee', '₹', 'debt', 'salary', 'cash', 'transaction']):
+        emergency_fund = user.monthly_expenses * 6
+        monthly_surplus = user.monthly_income - user.monthly_expenses
+        rate = fin.get('rate', 0)
+
+        return (
+            f"### 💰 Financial Health & Savings Analysis for {user.username}\n\n"
+            f"**Your Key Financial Metrics:**\n"
+            f"- **Monthly Income:** ₹{user.monthly_income:,.2f}\n"
+            f"- **Monthly Expenses:** ₹{user.monthly_expenses:,.2f}\n"
+            f"- **Net Monthly Balance:** ₹{monthly_surplus:,.2f}\n"
+            f"- **Current Savings:** ₹{user.savings:,.2f}\n"
+            f"- **Savings Rate:** {rate:.1f}%\n\n"
+            f"**Recommendations:**\n"
+            f"1. **50/30/20 Budgeting:** Aim to cap essential needs at 50%, discretionary wants at 30%, and direct at least 20% (₹{user.monthly_income * 0.2:,.2f}) into savings or investments.\n"
+            f"2. **Emergency Cushion:** Your recommended 6-month safety net is **₹{emergency_fund:,.2f}**. You currently have ~{(user.savings / emergency_fund * 100 if emergency_fund else 0):.0f}% of this goal funded.\n"
+            f"3. **Expense Optimization:** Review recurring discretionary items in your **Financial** tab to increase your monthly surplus.\n"
+            f"4. **Simulation:** Use our **Simulation** tool to forecast how saving an extra ₹5,000/month accelerates your net worth growth!"
+        )
+
+    # 5. Studies / Academics / GPA / Exam / Grades
+    if any(k in q for k in ['study', 'studies', 'gpa', 'exam', 'grade', 'learn', 'subject', 'course', 'college', 'academic', 'test', 'score', 'homework']):
+        gpa = gpa_data.get('gpa', 3.0)
+        efficiency = gpa_data.get('efficiency', 70)
+        rec = gpa_data.get('recommendation', 'Maintain consistent study sessions.')
+
+        return (
+            f"### 📚 Academic Performance & Study Strategy for {user.username}\n\n"
+            f"**Your Academic Standing:**\n"
+            f"- **Predicted GPA:** {gpa} / 4.0\n"
+            f"- **Study Efficiency Score:** {efficiency}%\n"
+            f"- **Target Study Hours:** {user.study_hours_per_week} hours/week\n"
+            f"- **Total Study Time Logged:** {total_study_hours:.1f} hours\n\n"
+            f"**Personalized Study Recommendations:**\n"
+            f"1. **Focus Technique:** Use 50-minute focused blocks followed by 10-minute breaks (Pomodoro) to elevate focus and reduce fatigue.\n"
+            f"2. **Active Recall:** Replace passive re-reading with self-quizzing and practice problems for your challenging subjects.\n"
+            f"3. **Milestone Strategy:** {rec}\n"
+            f"4. **Tracking:** Log your daily study sessions with accurate productivity scores in the **Study** section to sharpen future GPA forecasts."
+        )
+
+    # 6. Life Simulation / What-if
+    if any(k in q for k in ['simulat', 'scenario', 'forecast', 'projection', 'what-if', 'what if']):
+        return (
+            f"### 🔮 Life Simulation Engine for {user.username}\n\n"
+            f"The **Simulation** module projects how decisions today impact your future:\n\n"
+            f"**Available Simulations:**\n"
+            f"- **💰 Save Extra:** Forecast savings growth over 1 year (e.g. ₹5,000 extra monthly).\n"
+            f"- **📈 Investment Growth:** Project portfolio growth at standard market return rates.\n"
+            f"- **🛍️ Discretionary Spending:** Evaluate how overspending reduces your long-term security.\n"
+            f"- **📚 Study Hours:** Project potential GPA improvements with increased weekly study hours.\n"
+            f"- **🏃 Daily Exercise:** Project total monthly calories burned from workout routines.\n\n"
+            f"👉 Open the **Simulation** tab in the navigation menu to run custom scenarios!"
+        )
+
+    # 7. Goals / Productivity / Routine / Habits
+    if any(k in q for k in ['goal', 'habit', 'productivity', 'routine', 'task', 'plan', 'time', 'pomodoro', 'priority', 'schedule']):
+        goal_text = ""
+        if user.goals:
+            active_goals = [g.description for g in user.goals if not g.achieved]
+            if active_goals:
+                goal_text = "\n**Your Active Goals:**\n" + "\n".join(f"- {desc}" for desc in active_goals[:4])
+
+        return (
+            f"### 🎯 Goal Setting & Productivity Blueprint\n\n"
+            f"**Status:** {achieved_goals} completed out of {total_goals} total tracked goals.{goal_text}\n\n"
+            f"**Productivity Strategy:**\n"
+            f"1. **SMART Framework:** Define goals that are Specific, Measurable, Achievable, Relevant, and Time-bound.\n"
+            f"2. **Rule of 3:** Identify the top 3 highest-impact tasks each morning before checking messages or emails.\n"
+            f"3. **Time Blocking:** Schedule dedicated non-negotiable slots for study ({user.study_hours_per_week}h/week) and fitness ({user.fitness_hours_per_week}h/week).\n"
+            f"4. **Habit Stacking:** Anchor your new positive habits to existing routines (e.g., studying immediately after breakfast)."
+        )
+
+    # 8. Sleep / Rest / Wellbeing
+    if any(k in q for k in ['sleep', 'rest', 'tired', 'energy', 'burnout', 'stress']):
+        return (
+            f"### 🌙 Sleep & Recovery Optimization\n\n"
+            f"**Current Registered Sleep:** {user.sleep_hours_per_day} hours/day.\n\n"
+            f"**Actionable Insights:**\n"
+            f"- **Optimal Target:** 7–8.5 hours of continuous quality sleep is essential for memory consolidation and physical recovery.\n"
+            f"- **Sleep Hygiene:** Avoid bright screens 45 minutes before bedtime to regulate melatonin production.\n"
+            f"- **Consistent Rhythm:** Aim to sleep and wake up at the exact same times (+/- 30 mins) even on weekends to synchronize your circadian rhythm."
+        )
+
+    # 9. App Features / Overview / Greetings
+    if any(k in q for k in ['hi', 'hello', 'hey', 'who are you', 'help', 'start', 'intro', 'app', 'digital twin', 'feature']):
+        return (
+            f"### 👋 Hello, {user.username}!\n\n"
+            f"I am your dedicated **Digital Twin AI Assistant**. I analyze your live metrics across finances, academics, and fitness to help you make optimal decisions.\n\n"
+            f"**Your Profile Snapshot:**\n"
+            f"- 💰 **Savings:** ₹{user.savings:,.0f} (Savings Rate: {fin.get('rate', 0):.1f}%)\n"
+            f"- 📚 **Predicted GPA:** {gpa_data.get('gpa', 3.0)}/4.0 ({total_study_hours:.1f}h logged)\n"
+            f"- 🏃 **Fitness:** {total_fitness_min} mins logged ({user.fitness_hours_per_week}h/week goal)\n"
+            f"- 🎯 **Active Goals:** {total_goals - achieved_goals} pending\n\n"
+            f"**I can answer any question about your Digital Twin:**\n"
+            f"- *\"How can I improve my fitness routine?\"*\n"
+            f"- *\"What should I do to boost my savings rate?\"*\n"
+            f"- *\"How can I improve my GPA?\"*\n"
+            f"- *\"How do I use the Simulation feature?\"*"
+        )
+
+    # Fallback to scope reminder
+    return get_out_of_scope_response(user, query)
+
+@app.route('/user/assistant/clear', methods=['POST'])
+@login_required
+def clear_assistant_history():
+    ChatMessage.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
+    session.pop('last_query', None)
+    session.pop('last_response', None)
+    session.pop('hide_messages', None)
+    flash('Assistant chat history cleared successfully.')
+    return redirect(url_for('user_assistant'))
+
 @app.route('/user/assistant', methods=['GET', 'POST'])
 @login_required
 def user_assistant():
@@ -861,18 +1094,6 @@ def user_assistant():
         session['hide_messages'] = True   # <-- Hide messages in chat body
         return redirect(url_for('user_assistant'))
 
-    # ----- Load a specific conversation from history -----
-    load_id = request.args.get('load')
-    if load_id:
-        msg = ChatMessage.query.filter_by(id=load_id, user_id=current_user.id).first()
-        if msg:
-            session['last_query'] = msg.question
-            session['last_response'] = msg.response
-            session['hide_messages'] = False   # <-- Show messages
-        else:
-            flash('Message not found.')
-        return redirect(url_for('user_assistant'))
-
     # ----- Handle POST (new message) -----
     if request.method == 'POST':
         query = request.form.get('query', '').strip()
@@ -880,35 +1101,75 @@ def user_assistant():
             flash('Please enter a question.')
             return redirect(url_for('user_assistant'))
 
-        # --- Generate response (Gemini or fallback) ---
-        response = None
-        if gemini_model and GEMINI_API_KEY:
-            try:
-                user_data = f"""User profile: ... (your existing code)"""
-                prompt = f"..."
-                gemini_response = gemini_model.generate_content(prompt)
-                response = gemini_response.text.strip()
-            except Exception as e:
-                print(f"Gemini error: {e}")
-                flash('AI service unavailable. Using fallback.')
-                response = None
+        # --- Strict Scope Filter: Immediately refuse irrelevant queries ---
+        if not is_project_relevant_query(query):
+            response = get_out_of_scope_response(current_user, query)
+        else:
+            # --- Generate response (Gemini with timeout, fallback on error) ---
+            response = None
+            if gemini_model and GEMINI_API_KEY:
+                try:
+                    user_data = f"""
+                    User Profile:
+                    Username: {current_user.username}
+                    Age: {current_user.age}
+                    Occupation: {current_user.occupation}
+                    Monthly Income: ₹{current_user.monthly_income}
+                    Monthly Expenses: ₹{current_user.monthly_expenses}
+                    Savings: ₹{current_user.savings}
+                    Study Hours/Week: {current_user.study_hours_per_week}
+                    Fitness Hours/Week: {current_user.fitness_hours_per_week}
+                    Sleep Hours/Day: {current_user.sleep_hours_per_day}
 
-        # --- Fallback ---
-        if not response:
-            q = query.lower()
-            if 'spend' in q or 'save' in q or 'money' in q:
-                metrics = calculate_financial_metrics(current_user)
-                response = f"Your savings rate is {metrics['rate']:.1f}%..."
-            elif 'study' in q or 'gpa' in q:
-                gpa = predict_gpa(current_user)
-                response = f"Your predicted GPA is {gpa['gpa']}/4.0..."
-            elif 'fitness' in q or 'exercise' in q:
-                total = sum(f.duration_min for f in current_user.fitness_logs)
-                response = f"You've logged {total} minutes..."
-            elif 'goal' in q:
-                response = "I can help you set SMART goals..."
-            else:
-                response = "I'm your Digital Twin AI..."
+                    Financial Metrics:
+                    {calculate_financial_metrics(current_user)}
+
+                    Predicted GPA:
+                    {predict_gpa(current_user)}
+
+                    Total Study Hours:
+                    {sum(log.hours for log in current_user.study_logs)}
+
+                    Total Fitness Minutes:
+                    {sum(log.duration_min for log in current_user.fitness_logs)}
+                    """
+
+                    prompt = f"""
+                    You are the dedicated AI Assistant of the "Digital Twin AI" application.
+
+                    STRICT SCOPE AND RELEVANCE POLICY:
+                    1. You must ONLY answer questions directly related to this Digital Twin platform and the user's personal development dimensions:
+                       - Personal Finance & Budgeting (income, expenses, savings rate, investments)
+                       - Studies & Academics (study logs, GPA prediction, exams)
+                       - Fitness & Physical Health (workout logs, fitness targets, calories, routines)
+                       - Life Simulation & Forecasting (testing scenarios, projections)
+                       - Goals & Productivity (habit tracking, task management)
+                       - Navigation and features of the Digital Twin application.
+                    2. If the user asks ANY question outside of this project (such as world trivia, politics, entertainment, sports news, coding scripts, cooking recipes, or random questions), YOU MUST POLITELY REFUSE to answer it.
+                    3. When refusing an irrelevant question, say:
+                       "I am specifically designed to assist you only with your Digital Twin AI platform (personal finances, academics, fitness, life simulations, and goals). I cannot answer questions outside of this project. How can I help you with your Digital Twin metrics today?"
+                    4. Give practical, structured, and personalized recommendations.
+                    5. Format responses with markdown bolding, bullet points, and headers.
+
+                    User Data:
+                    {user_data}
+
+                    User Question:
+                    {query}
+                    """
+                    gemini_response = gemini_model.generate_content(
+                        prompt,
+                        request_options={"timeout": 10}
+                    )
+                    if gemini_response and gemini_response.text:
+                        response = gemini_response.text.strip()
+                except Exception as e:
+                    print(f"Gemini API error or timeout: {e}")
+                    response = None
+
+            # --- Fallback to Intelligent Digital Twin rule-based engine ---
+            if not response:
+                response = generate_rule_based_response(current_user, query)
 
         # --- Save to database ---
         chat_msg = ChatMessage(user_id=current_user.id, question=query, response=response)
@@ -916,20 +1177,26 @@ def user_assistant():
         db.session.commit()
         session['last_query'] = query
         session['last_response'] = response
-        session['hide_messages'] = False   # <-- Show all messages after sending
+        session['hide_messages'] = False
         return redirect(url_for('user_assistant'))
 
     # ----- GET: show chat -----
-    last_query = session.get('last_query')
-    last_response = session.get('last_response')
     hide_messages = session.get('hide_messages', False)
-    all_messages = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp.desc()).all()
+    all_messages = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp.asc()).all()
+
+    # Deduplicate questions for clean sidebar display
+    history_items = []
+    seen_questions = set()
+    for msg in reversed(all_messages):
+        norm_q = msg.question.strip().lower()
+        if norm_q not in seen_questions:
+            seen_questions.add(norm_q)
+            history_items.append(msg)
 
     return render_template('user/assistant.html',
                            user=current_user,
-                           last_query=last_query,
-                           last_response=last_response,
                            all_messages=all_messages,
+                           history_items=history_items,
                            hide_messages=hide_messages)
 
 @app.route('/user/add_goal', methods=['POST'])
